@@ -34,14 +34,14 @@ Reason: <one sentence pointing to what the merchant wrote>
 
 `nvidia/nemotron-3.5-lightning:free` — read from `OPENROUTER_MODEL` in `.env`, same string set as the fallback default in `triage.py`.
 
+## Secret Hygiene
+
+Both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are read from `.env`. That file is listed in `.gitignore` from the first commit and has never entered git history — `git log -S "sk-or-v1" --all` returns 0 commits.
+
 ## Validation
 
 - Route not in `{billing, orders}` → `ValueError`
 - `Reason:` line absent → `ValueError` (no silent fallback)
-
-## Secret Hygiene
-
-`.env` is in `.gitignore` from the first commit. `git log -S "sk-or-v1" --all` returns 0 commits.
 
 ## What Was Checked and Changed
 
