@@ -1,15 +1,15 @@
 # ticket-triage
 
-Shopify support ticket triage with LangGraph.
+Shopify merchant support ticket triage powered by LangGraph.
 
 ## Dataset
-Contains 24 labelled Shopify merchant support test tickets in `data/tickets.jsonl`.
+Contains 24 labelled Shopify merchant support test tickets in `data/tickets.jsonl` (and `shopify_merchant_tickets_test_set.csv`).
 
 ## Triage Prompt
 
-The triage node in `triage.py` uses the following prompt to classify tickets:
+The triage node in `triage.py` queries the OpenRouter LLM using the following prompt:
 
-```
+```text
 You are a support ticket triage specialist for Shopify merchants.
 Analyze the following merchant support message and categorize it into either 'billing' or 'orders'.
 
@@ -24,9 +24,41 @@ Merchant Message:
 {message_body}
 ```
 
-## Workflow Architecture
+## Route Verification
 
-- **Node**: Single LangGraph node called `triage`.
-- **Dynamic Routing**: Extracts `Route` and `Reason` dynamically from the model's response; the route is never hardcoded.
-- **Strict Validation**: Stops with a clear `ValueError` if the model produces anything other than `billing` or `orders`.
-- **Environment**: Reads `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` from `.env`.
+Route check: predicted route matches expected_route across test evaluations (`orders == orders` for SUP-48213, `billing == billing` for SUP-48197).
+
+## Run Output
+
+Output from running the LangGraph triage workflow (`run_eval.py`) on Maria's ticket alongside a contrasting billing ticket:
+
+```text
+================================================================================
+1. MARIA SOUSA TICKET (orders)
+================================================================================
+Ticket ID       : SUP-48213
+Merchant Name   : Maria Sousa
+Expected Route  : orders
+Message Body    :
+"Olá, since saturday my shipping rates are all wrong, buyers in europe pay the domestic portugal rate and buyers in portugal got charged international?? about 40 orders already since the black friday promo started... I didnt change anything in the settings, só abri a loja de manhã e vi as encomendas assim. one customer from Braga paid €14,90 postage for a small mug that costs €4,50 to send inside portugal, she is very upset and wrote me. and the ones going to France and Germany paid almost nothing for big boxes. please fix before more people buy, I have the cyber monday email going out today at 12h. obrigada, Maria - Barro Azul Cerâmica"
+
+[Graph Output]
+Route           : orders
+Match Expected? : True
+Reason          : The merchant reports that shipping rates have been incorrectly applied to customer orders since Saturday, causing wrong postage charges across regions and impacting order fulfillment.
+
+================================================================================
+2. CONTRASTING TICKET (billing)
+================================================================================
+Ticket ID       : SUP-48197
+Merchant Name   : Carla Jennings
+Expected Route  : billing
+Message Body    :
+"hi, I uninstalled the ReviewPop app on nov 8 because it was slowing down my product pages and I switched to a different one, but my bill this month still shows ReviewPop at $29. I checked apps and its definitely not installed anymore, I even reinstalled the other one to make sure. I dont want to pay for something I'm not using esp right before black friday when every dollar counts. can you take that off or refund it please. store is northfork coffee, thanks"
+
+[Graph Output]
+Route           : billing
+Match Expected? : True
+Reason          : The merchant is disputing a $29 app charge that persists after uninstalling ReviewPop and requesting a refund for a fee they're no longer using.
+================================================================================
+```
