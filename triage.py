@@ -90,8 +90,11 @@ def triage(state: TriageState) -> dict:
             f"Invalid route '{route}' received from model. Expected 'billing' or 'orders'. Full model reply:\n{reply}"
         )
 
+    # Validate reason strictly
     if not reason:
-        reason = reply
+        raise ValueError(
+            f"Missing 'Reason:' line in model reply. Expected labelled 'Reason:' line. Full model reply:\n{reply}"
+        )
 
     return {"route": route, "reason": reason}
 
