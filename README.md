@@ -40,6 +40,15 @@ To ensure the reason strictly points to the merchant's actual wording rather tha
 - **Carla Jennings (SUP-48197)**: 1/1 pass (100% match with `expected_route: billing`).
 - **Total Verification Passes**: 3/3 passes (0 route mismatches, 0 fallback failures).
 
+## What Was Checked and Changed
+
+- **What was checked**:
+  - Checked the predicted route against Column J (`expected_route`) for Maria Sousa's ticket (`SUP-48213`), verifying that both Run 1 and Run 2 predicted `orders` (0 route mismatches).
+  - Checked that the extracted reason directly cites Maria's wording (referencing the 40 orders since Saturday and domestic Portugal vs European shipping rates inverted).
+  - Checked the contrasting billing ticket (`SUP-48197` - Carla Jennings), verifying it routed to `billing` as expected.
+- **What was changed**:
+  - In `triage.py`, replaced the silent reason fallback (`if not reason: reason = reply`) with a strict `ValueError` to ensure that missing or malformed `Reason:` lines fail loudly instead of passing unvalidated text.
+
 ---
 
 ## Run Output
