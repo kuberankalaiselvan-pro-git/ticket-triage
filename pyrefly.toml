@@ -1,0 +1,6 @@
+python-interpreter-path = "C:\\Python313\\python.exe"
+search-path = [
+    "C:\\Users\\User\\AppData\\Roaming\\Python\\Python313\\site-packages",
+    "C:\\Python313\\Lib\\site-packages"
+]
+
