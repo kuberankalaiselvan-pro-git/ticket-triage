@@ -24,13 +24,23 @@ Merchant Message:
 {message_body}
 ```
 
+## Strict Validation & Failure Behavior
+
+To ensure the reason strictly points to the merchant's actual wording rather than falling back to unparsed model text, both `Route:` and `Reason:` lines are strictly validated:
+- **Invalid or Missing Route**: Raises `ValueError: Invalid route '<route>' received from model. Expected 'billing' or 'orders'.`
+- **Missing Reason Line**: Replaced the previous silent fallback (`reason = reply`) with a strict exception:
+  ```
+  ValueError: Missing 'Reason:' line in model reply. Expected labelled 'Reason:' line. Full model reply:
+  <reply>
+  ```
+
 ## Route Verification
 
 Route check: predicted route matches expected_route across test evaluations (`orders == orders` for SUP-48213, `billing == billing` for SUP-48197).
 
 ## Run Output
 
-Output from running the LangGraph triage workflow (`run_eval.py`) on Maria's ticket alongside a contrasting billing ticket:
+Output from running the LangGraph triage workflow (`run_eval.py`) on Maria's ticket alongside a contrasting billing ticket under strict validation:
 
 ```text
 ================================================================================
@@ -45,7 +55,7 @@ Message Body    :
 [Graph Output]
 Route           : orders
 Match Expected? : True
-Reason          : The merchant reports that shipping rates have been incorrectly applied to customer orders since Saturday, causing wrong postage charges across regions and impacting order fulfillment.
+Reason          : The merchant states that shipping rates are wrong since Saturday, with European buyers paying domestic Portugal rates while Portugal buyers were charged international rates, directly affecting roughly 40 orders since the Black Friday promo.
 
 ================================================================================
 2. CONTRASTING TICKET (billing)
@@ -59,6 +69,6 @@ Message Body    :
 [Graph Output]
 Route           : billing
 Match Expected? : True
-Reason          : The merchant is disputing a $29 app charge that persists after uninstalling ReviewPop and requesting a refund for a fee they're no longer using.
+Reason          : The merchant is being charged $29 for ReviewPop this month after uninstalling the app and is requesting a refund or charge removal.
 ================================================================================
 ```
