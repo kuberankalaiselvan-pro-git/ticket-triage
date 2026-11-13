@@ -34,6 +34,11 @@ Route: <billing or orders>
 Reason: <one sentence pointing to what the merchant wrote>
 ```
 
+## Model Configuration
+
+- **Model**: `nvidia/nemotron-3.5-lightning:free` (OpenRouter active free tier).
+- **Environment**: Configured via `OPENROUTER_MODEL` in `.env` and set as the default fallback in `triage.py`.
+
 ## Strict Validation & Failure Behavior
 
 To ensure the reason strictly points to the merchant's actual wording rather than falling back to unparsed model text, both `Route:` and `Reason:` lines are strictly validated:

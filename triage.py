@@ -26,7 +26,7 @@ except ImportError:
     _load_env_fallback(env_path)
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free")
 
 if not OPENROUTER_API_KEY:
     raise ValueError("OPENROUTER_API_KEY is not set in .env")
