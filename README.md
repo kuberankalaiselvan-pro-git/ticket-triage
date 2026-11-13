@@ -24,6 +24,16 @@ Merchant Message:
 {message_body}
 ```
 
+### Key Prompt Excerpt
+
+The core two-line routing and grounding contract enforced on the LLM:
+
+```text
+Answer strictly on two labelled lines in this exact format:
+Route: <billing or orders>
+Reason: <one sentence pointing to what the merchant wrote>
+```
+
 ## Strict Validation & Failure Behavior
 
 To ensure the reason strictly points to the merchant's actual wording rather than falling back to unparsed model text, both `Route:` and `Reason:` lines are strictly validated:
@@ -34,11 +44,10 @@ To ensure the reason strictly points to the merchant's actual wording rather tha
   <reply>
   ```
 
-## Route Verification & Pass Count
+## Security & Secret Hygiene
 
-- **Maria Sousa (SUP-48213)**: 2/2 passes (100% match with `expected_route: orders` across both initial run and strict-validation re-run).
-- **Carla Jennings (SUP-48197)**: 1/1 pass (100% match with `expected_route: billing`).
-- **Total Verification Passes**: 3/3 passes (0 route mismatches, 0 fallback failures).
+- `.env` is listed in `.gitignore` and has been excluded since the repository's initial commit.
+- **Git History Audit**: Verified with `git log --all --full-history -- .env` and `git log -S "sk-or-v1" --all`—both return 0 commits, confirming zero API keys or environment files have ever entered git history.
 
 ## What Was Checked and Changed
 
@@ -48,6 +57,12 @@ To ensure the reason strictly points to the merchant's actual wording rather tha
   - Checked the contrasting billing ticket (`SUP-48197` - Carla Jennings), verifying it routed to `billing` as expected.
 - **What was changed**:
   - In `triage.py`, replaced the silent reason fallback (`if not reason: reason = reply`) with a strict `ValueError` to ensure that missing or malformed `Reason:` lines fail loudly instead of passing unvalidated text.
+
+## Route Verification & Pass Count
+
+- **Maria Sousa (SUP-48213)**: 2/2 passes (100% match with `expected_route: orders` across both initial run and strict-validation re-run).
+- **Carla Jennings (SUP-48197)**: 1/1 pass (100% match with `expected_route: billing`).
+- **Total Verification Passes**: 3/3 passes (0 route mismatches, 0 fallback failures).
 
 ---
 
@@ -60,16 +75,20 @@ To ensure the reason strictly points to the merchant's actual wording rather tha
 
 #### Run 1 (Initial Evaluation)
 ```text
-Route           : orders
-Match Expected? : True
-Reason          : The merchant reports that broken shipping rates are incorrectly charging domestic buyers international fees and vice versa, directly impacting order fulfillments.
+[Graph Output]
+Route              : orders
+Expected Route     : orders
+Route == Expected? : True (PASS)
+Reason             : The merchant reports that broken shipping rates are incorrectly charging domestic buyers international fees and vice versa, directly impacting order fulfillments.
 ```
 
 #### Run 2 (Re-Run with Strict Validation)
 ```text
-Route           : orders
-Match Expected? : True
-Reason          : The merchant states that shipping rates are wrong since Saturday, with European buyers paying domestic Portugal rates while Portugal buyers were charged international rates, directly affecting roughly 40 orders since the Black Friday promo.
+[Graph Output]
+Route              : orders
+Expected Route     : orders
+Route == Expected? : True (PASS)
+Reason             : The merchant states that shipping rates are wrong since Saturday, with European buyers paying domestic Portugal rates while Portugal buyers were charged international rates, directly affecting roughly 40 orders since the Black Friday promo.
 ```
 
 ---
@@ -82,7 +101,9 @@ Reason          : The merchant states that shipping rates are wrong since Saturd
 
 #### Run Output
 ```text
-Route           : billing
-Match Expected? : True
-Reason          : The merchant is being charged $29 for ReviewPop this month after uninstalling the app and is requesting a refund or charge removal.
+[Graph Output]
+Route              : billing
+Expected Route     : billing
+Route == Expected? : True (PASS)
+Reason             : The merchant is being charged $29 for ReviewPop this month after uninstalling the app and is requesting a refund or charge removal.
 ```
